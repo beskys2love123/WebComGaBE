@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Service Nginx
+  nginx:
+    image: nginx:latest
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /etc/nginx/sites-available/reverse-proxy.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - repo-service
+      - auth-service
+      - file-service
+    networks:
+      - mynetwork
+  
+  # Service 1: repo_nha_hang_com_ga_BE
+  repo-service:
+    image: haibui040623/repo-nha-hang-com-ga-be:latest
+    container_name: repo-nha-hang-com-ga-be-container
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - mynetwork
+
+  # Service 2: Auth Service
+  auth-service:
+    image: haibui040623/auth-service:latest
+    container_name: auth-service-container
+    ports:
+      - "8081:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - mynetwork
+
+  # Service 3: File Service
+  file-service:
+    image: haibui040623/file-service:latest
+    container_name: file-service-container
+    ports:
+      - "8082:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
